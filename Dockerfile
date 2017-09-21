@@ -1,5 +1,5 @@
 FROM debian:8
-MAINTAINER wraithfive
+MAINTAINER scs3jb
 ENV LANG C.UTF-8
 #
 # Create user and group for SABnzbd.
