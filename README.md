@@ -19,7 +19,7 @@ The Docker image currently supports:
 To run the SABnzbd container you can execute:
 
 ```bash
-docker run --name sabnzbd -v <datadir path>:/datadir -v <media path>:/media -p 8080:8080 sabnzbd/sabnzbd
+docker run --name sabnzbd -v <datadir path>:/datadir -v <media path>:/media -p 8080:8080 roaanv/sabnzbd
 ```
 
 Open a browser and point it to [http://my-docker-host:8080](http://my-docker-host:8080)
@@ -38,7 +38,7 @@ If you want to use the Docker Hub image within your existing Docker Compose file
 
 ```yaml
 sabnzbd:
-    image: "sabnzbd/sabnzbd"
+    image: "roaanv/sabnzbd"
     container_name: "sabnzbd"
     volumes:
         - "<datadir path>:/datadir"
