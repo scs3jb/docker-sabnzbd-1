@@ -1,10 +1,10 @@
 IMAGE_NAME = sabnzbd
 DOCKER_HOST ?= ""
 DOCKER_USER ?= roaanv/
-VERSION_TAG ?= 2.8.5
+VERSION_TAG ?= 2.3.8
 FULL_IMAGE_NAME = $(DOCKER_HOST)$(DOCKER_USER)$(IMAGE_NAME)
 
-all: build
+all: image
 
 image: build_image tag_latest
 
