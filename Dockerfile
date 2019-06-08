@@ -1,4 +1,4 @@
-FROM debian:jessie-backports
+FROM debian:jessie-slim
 MAINTAINER Dominique Barton
 
 #
@@ -24,22 +24,24 @@ ENV LANG C.UTF-8
 #
 # Specify versions of software to install.
 #
-ARG SABNZBD_VERSION=2.3.8
+ARG SABNZBD_VERSION=2.3.9
 ARG PAR2CMDLINE_VERSION=v0.6.14-mt1
 
 #
 # Install SABnzbd and all required dependencies.
 #
 
+# RUN echo "deb [check-valid-until=no] http://archive.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list
+# RUN sed -i '/.* jessie-updates main/d' /etc/apt/sources.list
+
 RUN export DEBIAN_FRONTEND=noninteractive \
     && export BUILD_PACKAGES="automake build-essential curl python-dev python-pip" \
     && export RUNTIME_BACKPORTS_PACKAGES="openssl python-cryptography python-openssl" \
-    && export RUNTIME_PACKAGES="ca-certificates p7zip-full python-cheetah python-yenc unrar unzip libgomp1" \
+    && export RUNTIME_PACKAGES="ca-certificates p7zip-full python-cheetah python-yenc unrar unzip libgomp1 openssl python-cryptography python-openssl" \
     && export PIP_PACKAGES="sabyenc" \
     && sed -i "s/ main$/ main contrib non-free/" /etc/apt/sources.list \
     && apt-get -q update \
     && apt-get install -qqy $BUILD_PACKAGES $RUNTIME_PACKAGES \
-    && apt-get -t jessie-backports install -qqy $RUNTIME_BACKPORTS_PACKAGES \
     && pip install $PIP_PACKAGES \
     && curl -SL -o /tmp/sabnzbd.tar.gz https://github.com/sabnzbd/sabnzbd/releases/download/${SABNZBD_VERSION}/SABnzbd-${SABNZBD_VERSION}-src.tar.gz \
     && tar xzf /tmp/sabnzbd.tar.gz \
@@ -57,7 +59,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y remove --purge $BUILD_PACKAGES \
     && apt-get -y autoremove \
     && apt-get install -qqy $RUNTIME_PACKAGES \
-    && apt-get -t jessie-backports install -qqy $RUNTIME_BACKPORTS_PACKAGES \
     && apt-get -y clean \
     && rm -rf /var/lib/apt/lists/* \
     && cd / \
