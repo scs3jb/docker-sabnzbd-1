@@ -1,6 +1,6 @@
-FROM debian:8
+FROM debian:jessie-slim
 MAINTAINER scs3jb
-ENV LANG C.UTF-8
+
 #
 # Create user and group for SABnzbd.
 #
@@ -16,20 +16,36 @@ ADD sabnzbd.sh /sabnzbd.sh
 RUN chmod 755 /sabnzbd.sh
 
 #
+# Fix locales to handle UTF-8 characters.
+#
+
+ENV LANG C.UTF-8
+
+#
+# Specify versions of software to install.
+#
+ARG SABNZBD_VERSION=2.3.9
+ARG PAR2CMDLINE_VERSION=v0.6.14-mt1
+
+#
 # Install SABnzbd and all required dependencies.
 #
 
-RUN export SABNZBD_VERSION=2.3.7 PAR2CMDLINE_VERSION=v0.6.14-mt1 \
+RUN export DEBIAN_FRONTEND=noninteractive \
+    && export BUILD_PACKAGES="automake build-essential curl python-dev python-pip" \
+    && export RUNTIME_BACKPORTS_PACKAGES="openssl python-cryptography python-openssl" \
+    && export RUNTIME_PACKAGES="ca-certificates p7zip-full python-cheetah python-yenc unrar unzip libgomp1 openssl python-cryptography python-openssl" \
+    && export PIP_PACKAGES="sabyenc" \
     && sed -i "s/ main$/ main contrib non-free/" /etc/apt/sources.list \
     && apt-get -q update \
-    && apt-get install -qy curl ca-certificates python-cheetah python-openssl python-yenc python-dev python-pip unzip unrar p7zip-full build-essential automake libgomp1 \
-    && pip install sabyenc==3.3.1 \
-    && curl -L -o /tmp/sabnzbd.tar.gz https://github.com/sabnzbd/sabnzbd/releases/download/${SABNZBD_VERSION}/SABnzbd-${SABNZBD_VERSION}-src.tar.gz \
+    && apt-get install -qqy $BUILD_PACKAGES $RUNTIME_PACKAGES \
+    && pip install $PIP_PACKAGES \
+    && curl -SL -o /tmp/sabnzbd.tar.gz https://github.com/sabnzbd/sabnzbd/releases/download/${SABNZBD_VERSION}/SABnzbd-${SABNZBD_VERSION}-src.tar.gz \
     && tar xzf /tmp/sabnzbd.tar.gz \
     && mv SABnzbd-* sabnzbd \
     && chown -R sabnzbd: sabnzbd \
-    && curl -L -o /tmp/par2cmdline.tar.gz https://codeload.github.com/jkansanen/par2cmdline-mt/tar.gz/${PAR2CMDLINE_VERSION} \
-    && tar xzf /tmp/par2cmdline.tar.gz -C /tmp \
+    && curl -o /tmp/par2cmdline-mt.tar.gz https://codeload.github.com/jkansanen/par2cmdline-mt/tar.gz/${PAR2CMDLINE_VERSION} \
+    && tar xzf /tmp/par2cmdline-mt.tar.gz -C /tmp \
     && cd /tmp/par2cmdline-* \
     && aclocal \
     && automake --add-missing \
@@ -37,8 +53,9 @@ RUN export SABNZBD_VERSION=2.3.7 PAR2CMDLINE_VERSION=v0.6.14-mt1 \
     && ./configure \
     && make \
     && make install \
-    && apt-get -y remove build-essential automake \
+    && apt-get -y remove --purge $BUILD_PACKAGES \
     && apt-get -y autoremove \
+    && apt-get install -qqy $RUNTIME_PACKAGES \
     && apt-get -y clean \
     && rm -rf /var/lib/apt/lists/* \
     && cd / \
